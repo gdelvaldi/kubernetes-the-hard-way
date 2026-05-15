@@ -7,17 +7,17 @@ Kubernetes components are stateless and store cluster state in [etcd](https://gi
 Copy `etcd` binaries and systemd unit files to the `server` machine:
 
 ```bash
-scp \
+scp -i ~/.ssh/k8s \
   downloads/controller/etcd \
   downloads/client/etcdctl \
   units/etcd.service \
-  root@server:~/
+  root@k8s-server01:~/
 ```
 
 The commands in this lab must be run on the `server` machine. Login to the `server` machine using the `ssh` command. Example:
 
 ```bash
-ssh root@server
+ssh root@k8s-server01
 ```
 
 ## Bootstrapping an etcd Cluster
@@ -49,6 +49,8 @@ Create the `etcd.service` systemd unit file:
 
 ```bash
 mv etcd.service /etc/systemd/system/
+restorecon -RF /etc/systemd/system/etcd.service
+restorecon -RF /usr/local/bin
 ```
 
 ### Start the etcd Server

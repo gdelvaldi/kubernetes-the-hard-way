@@ -24,7 +24,7 @@ envsubst < configs/encryption-config.yaml \
 Copy the `encryption-config.yaml` encryption config file to each controller instance:
 
 ```bash
-scp encryption-config.yaml root@server:~/
+scp -i ~/.ssh/k8s encryption-config.yaml root@k8s-server01:~/
 ```
 
 Next: [Bootstrapping the etcd Cluster](07-bootstrapping-etcd.md)

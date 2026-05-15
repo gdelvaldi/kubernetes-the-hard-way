@@ -7,7 +7,7 @@ Think of the `jumpbox` as the administration machine that you will use as a home
 Log in to the `jumpbox`:
 
 ```bash
-ssh root@jumpbox
+ssh root@hub01
 ```
 
 All commands will be run as the `root` user. This is being done for the sake of convenience, and will help reduce the number of commands required to set everything up.
@@ -18,8 +18,8 @@ Now that you are logged into the `jumpbox` machine as the `root` user, you will 
 
 ```bash
 {
-  apt-get update
-  apt-get -y install wget curl vim openssl git
+  dnf update
+  dnf install -y wget curl vim openssl git
 }
 ```
 
@@ -52,12 +52,6 @@ pwd
 
 In this section you will download the binaries for the various Kubernetes components. The binaries will be stored in the `downloads` directory on the `jumpbox`, which will reduce the amount of internet bandwidth required to complete this tutorial as we avoid downloading the binaries multiple times for each machine in our Kubernetes cluster.
 
-The binaries that will be downloaded are listed in either the `downloads-amd64.txt` or `downloads-arm64.txt` file depending on your hardware architecture, which you can review using the `cat` command:
-
-```bash
-cat downloads-$(dpkg --print-architecture).txt
-```
-
 Download the binaries into a directory called `downloads` using the `wget` command:
 
 ```bash
@@ -65,7 +59,7 @@ wget -q --show-progress \
   --https-only \
   --timestamping \
   -P downloads \
-  -i downloads-$(dpkg --print-architecture).txt
+  -i downloads-amd64.txt
 ```
 
 Depending on your internet connection speed it may take a while to download over `500` megabytes of binaries, and once the download is complete, you can list them using the `ls` command:
@@ -78,23 +72,16 @@ Extract the component binaries from the release archives and organize them under
 
 ```bash
 {
-  ARCH=$(dpkg --print-architecture)
+  ARCH=amd64
   mkdir -p downloads/{client,cni-plugins,controller,worker}
-  tar -xvf downloads/crictl-v1.32.0-linux-${ARCH}.tar.gz \
-    -C downloads/worker/
-  tar -xvf downloads/containerd-2.1.0-beta.0-linux-${ARCH}.tar.gz \
-    --strip-components 1 \
-    -C downloads/worker/
-  tar -xvf downloads/cni-plugins-linux-${ARCH}-v1.6.2.tgz \
-    -C downloads/cni-plugins/
-  tar -xvf downloads/etcd-v3.6.0-rc.3-linux-${ARCH}.tar.gz \
-    -C downloads/ \
-    --strip-components 1 \
-    etcd-v3.6.0-rc.3-linux-${ARCH}/etcdctl \
-    etcd-v3.6.0-rc.3-linux-${ARCH}/etcd
+  tar -xvf downloads/crictl-v1.36.0-linux-amd64.tar.gz -C downloads/worker/
+  tar -xvf downloads/containerd-2.3.0-linux-amd64.tar.gz --strip-components=1 -C downloads/worker/
+  tar -xvf downloads/cni-plugins-linux-${ARCH}-v1.9.1.tgz -C downloads/cni-plugins/
+
+  tar -xvf downloads/etcd-v3.6.11-linux-${ARCH}.tar.gz -C downloads/ --strip-components 1 \
+    etcd-v3.6.11-linux-${ARCH}/etcdctl etcd-v3.6.11-linux-${ARCH}/etcd
   mv downloads/{etcdctl,kubectl} downloads/client/
-  mv downloads/{etcd,kube-apiserver,kube-controller-manager,kube-scheduler} \
-    downloads/controller/
+  mv downloads/{etcd,kube-apiserver,kube-controller-manager,kube-scheduler} downloads/controller/
   mv downloads/{kubelet,kube-proxy} downloads/worker/
   mv downloads/runc.${ARCH} downloads/worker/runc
 }
@@ -131,8 +118,8 @@ kubectl version --client
 ```
 
 ```text
-Client Version: v1.32.3
-Kustomize Version: v5.5.0
+Client Version: v1.36.1
+Kustomize Version: v5.8.1
 ```
 
 At this point the `jumpbox` has been set up with all the command line tools and utilities necessary to complete the labs in this tutorial.

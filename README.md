@@ -19,9 +19,9 @@ Kubernetes The Hard Way guides you through bootstrapping a basic Kubernetes clus
 
 Component versions:
 
-* [kubernetes](https://github.com/kubernetes/kubernetes) v1.32.x
-* [containerd](https://github.com/containerd/containerd) v2.1.x
-* [cni](https://github.com/containernetworking/cni) v1.6.x
+* [kubernetes](https://github.com/kubernetes/kubernetes) v1.36.x
+* [containerd](https://github.com/containerd/containerd) v2.3.x
+* [cni](https://github.com/containernetworking/cni) v1.3.x
 * [etcd](https://github.com/etcd-io/etcd) v3.6.x
 
 ## Labs
