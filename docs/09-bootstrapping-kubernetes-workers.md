@@ -9,22 +9,20 @@ The commands in this section must be run from the `jumpbox`.
 Copy the Kubernetes binaries and systemd unit files to each worker instance:
 
 ```bash
-for HOST in node-0 node-1; do
+for HOST in k8s-worker01 k8s-worker02; do
   SUBNET=$(grep ${HOST} machines.txt | cut -d " " -f 4)
   sed "s|SUBNET|$SUBNET|g" \
     configs/10-bridge.conf > 10-bridge.conf
 
-  sed "s|SUBNET|$SUBNET|g" \
-    configs/kubelet-config.yaml > kubelet-config.yaml
-
-  scp 10-bridge.conf kubelet-config.yaml \
-  root@${HOST}:~/
+  scp -i ~/.ssh/k8s 10-bridge.conf \
+    configs/kubelet-config.yaml \
+    root@${HOST}:~/
 done
 ```
 
 ```bash
-for HOST in node-0 node-1; do
-  scp \
+for HOST in k8s-worker01 k8s-worker02; do
+  scp -i ~/.ssh/k8s \
     downloads/worker/* \
     downloads/client/kubectl \
     configs/99-loopback.conf \
@@ -38,17 +36,17 @@ done
 ```
 
 ```bash
-for HOST in node-0 node-1; do
-  scp \
+for HOST in k8s-worker01 k8s-worker02; do
+  scp -i ~/.ssh/k8s \
     downloads/cni-plugins/* \
     root@${HOST}:~/cni-plugins/
 done
 ```
 
-The commands in the next section must be run on each worker instance: `node-0`, `node-1`. Login to the worker instance using the `ssh` command. Example:
+The commands in the next section must be run on each worker instance: `k8s-worker01`, `k8s-worker02`. Login to the worker instance using the `ssh` command. Example:
 
 ```bash
-ssh root@node-0
+ssh -i ~/.ssh/k8s root@k8s-worker01
 ```
 
 ## Provisioning a Kubernetes Worker Node
@@ -57,8 +55,7 @@ Install the OS dependencies:
 
 ```bash
 {
-  apt-get update
-  apt-get -y install socat conntrack ipset kmod
+  dnf install -y socat conntrack-tools ipset kmod
 }
 ```
 
@@ -164,10 +161,24 @@ Create the `kubelet-config.yaml` configuration file:
 }
 ```
 
+### Configure Firewall
+
+Open the ports required by the worker node components:
+
+```bash
+{
+  firewall-cmd --permanent --add-port=10250/tcp
+  firewall-cmd --permanent --add-port=10256/tcp
+  firewall-cmd --permanent --add-port=30000-32767/tcp
+  firewall-cmd --reload
+}
+```
+
 ### Start the Worker Services
 
 ```bash
 {
+  restorecon restorecon -RF /bin/containerd
   systemctl daemon-reload
   systemctl enable containerd kubelet kube-proxy
   systemctl start containerd kubelet kube-proxy
@@ -184,7 +195,7 @@ systemctl is-active kubelet
 active
 ```
 
-Be sure to complete the steps in this section on each worker node, `node-0` and `node-1`, before moving on to the next section.
+Be sure to complete the steps in this section on each worker node, `k8s-worker01` and `k8s-worker02`, before moving on to the next section.
 
 ## Verification
 
@@ -193,15 +204,15 @@ Run the following commands from the `jumpbox` machine.
 List the registered Kubernetes nodes:
 
 ```bash
-ssh root@server \
+ssh -i ~/.ssh/k8s root@k8s-server01 \
   "kubectl get nodes \
   --kubeconfig admin.kubeconfig"
 ```
 
 ```
-NAME     STATUS   ROLES    AGE    VERSION
-node-0   Ready    <none>   1m     v1.32.3
-node-1   Ready    <none>   10s    v1.32.3
+NAME          STATUS   ROLES    AGE    VERSION
+k8s-worker01  Ready    <none>   1m     v1.36.1
+k8s-worker02  Ready    <none>   10s    v1.36.1
 ```
 
 Next: [Configuring kubectl for Remote Access](10-configuring-kubectl.md)

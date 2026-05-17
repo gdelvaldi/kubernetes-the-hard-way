@@ -8,24 +8,24 @@ In this lab you will generate a kubeconfig file for the `kubectl` command line u
 
 Each kubeconfig requires a Kubernetes API Server to connect to.
 
-You should be able to ping `server.kubernetes.local` based on the `/etc/hosts` DNS entry from a previous lab.
+You should be able to ping `k8s-server01.lab.net` based on the `/etc/hosts` DNS entry from a previous lab.
 
 ```bash
 curl --cacert ca.crt \
-  https://server.kubernetes.local:6443/version
+  https://k8s-server01.lab.net:6443/version
 ```
 
 ```text
 {
   "major": "1",
-  "minor": "32",
-  "gitVersion": "v1.32.3",
+  "minor": "36",
+  "gitVersion": "v1.36.1",
   "gitCommit": "32cc146f75aad04beaaa245a7157eb35063a9f99",
   "gitTreeState": "clean",
   "buildDate": "2025-03-11T19:52:21Z",
   "goVersion": "go1.23.6",
   "compiler": "gc",
-  "platform": "linux/arm64"
+  "platform": "linux/amd64"
 }
 ```
 
@@ -36,7 +36,7 @@ Generate a kubeconfig file suitable for authenticating as the `admin` user:
   kubectl config set-cluster kubernetes-the-hard-way \
     --certificate-authority=ca.crt \
     --embed-certs=true \
-    --server=https://server.kubernetes.local:6443
+    --server=https://k8s-server01.lab.net:6443
 
   kubectl config set-credentials admin \
     --client-certificate=admin.crt \
@@ -61,9 +61,9 @@ kubectl version
 ```
 
 ```text
-Client Version: v1.32.3
-Kustomize Version: v5.5.0
-Server Version: v1.32.3
+Client Version: v1.36.1
+Kustomize Version: v5.8.1
+Server Version: v1.36.1
 ```
 
 List the nodes in the remote Kubernetes cluster:
@@ -73,9 +73,9 @@ kubectl get nodes
 ```
 
 ```
-NAME     STATUS   ROLES    AGE    VERSION
-node-0   Ready    <none>   10m   v1.32.3
-node-1   Ready    <none>   10m   v1.32.3
+NAME          STATUS   ROLES    AGE    VERSION
+k8s-worker01  Ready    <none>   10m    v1.36.1
+k8s-worker02  Ready    <none>   10m    v1.36.1
 ```
 
 Next: [Provisioning Pod Network Routes](11-pod-network-routes.md)

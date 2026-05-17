@@ -34,7 +34,7 @@ SSH will be used to configure the machines in the cluster. Verify that you have 
 
 If `root` SSH access is enabled for each of your machines you can skip this section.
 
-By default, a new `debian` install disables SSH access for the `root` user. This is done for security reasons as the `root` user has total administrative control of unix-like systems. If a weak password is used on a machine connected to the internet, well, let's just say it's only a matter of time before your machine belongs to someone else. As mentioned earlier, we are going to enable `root` access over SSH in order to streamline the steps in this tutorial. Security is a tradeoff, and in this case, we are optimizing for convenience. Log on to each machine via SSH using your user account, then switch to the `root` user using the `su` command:
+By default, a new `Rocky Linux` install may disable SSH access for the `root` user. This is done for security reasons as the `root` user has total administrative control of unix-like systems. If a weak password is used on a machine connected to the internet, well, let's just say it's only a matter of time before your machine belongs to someone else. As mentioned earlier, we are going to enable `root` access over SSH in order to streamline the steps in this tutorial. Security is a tradeoff, and in this case, we are optimizing for convenience. Log on to each machine via SSH using your user account, then switch to the `root` user using the `su` command:
 
 ```bash
 su - root
@@ -56,28 +56,27 @@ systemctl restart sshd
 
 ### Generate and Distribute SSH Keys
 
-In this section you will generate and distribute an SSH keypair to the `server`, `node-0`, and `node-1`, machines, which will be used to run commands on those machines throughout this tutorial. Run the following commands from the `jumpbox` machine.
+In this section you will generate and distribute an SSH keypair to the `k8s-server01`, `k8s-worker01`, and `k8s-worker02` machines, which will be used to run commands on those machines throughout this tutorial. Run the following commands from the `jumpbox` machine.
 
 Generate a new SSH key:
 
 ```bash
-ssh-keygen
+ssh-keygen -t rsa -f ~/.ssh/k8s
 ```
 
 ```text
 Generating public/private rsa key pair.
-Enter file in which to save the key (/root/.ssh/id_rsa):
 Enter passphrase (empty for no passphrase):
 Enter same passphrase again:
-Your identification has been saved in /root/.ssh/id_rsa
-Your public key has been saved in /root/.ssh/id_rsa.pub
+Your identification has been saved in /root/.ssh/k8s
+Your public key has been saved in /root/.ssh/k8s.pub
 ```
 
 Copy the SSH public key to each machine:
 
 ```bash
 while read IP FQDN HOST SUBNET; do
-  ssh-copy-id root@${IP}
+  ssh-copy-id -i ~/.ssh/k8s.pub root@${IP}
 done < machines.txt
 ```
 
@@ -85,7 +84,7 @@ Once each key is added, verify SSH public key access is working:
 
 ```bash
 while read IP FQDN HOST SUBNET; do
-  ssh -n root@${IP} hostname
+  ssh -i ~/.ssh/k8s -n root@${IP} hostname
 done < machines.txt
 ```
 
@@ -106,9 +105,9 @@ Set the hostname on each machine listed in the `machines.txt` file:
 ```bash
 while read IP FQDN HOST SUBNET; do
     CMD="sed -i 's/^127.0.1.1.*/127.0.1.1\t${FQDN} ${HOST}/' /etc/hosts"
-    ssh -n root@${IP} "$CMD"
-    ssh -n root@${IP} hostnamectl set-hostname ${HOST}
-    ssh -n root@${IP} systemctl restart systemd-hostnamed
+    ssh -i ~/.ssh/k8s -n root@${IP} "$CMD"
+    ssh -i ~/.ssh/k8s -n root@${IP} hostnamectl set-hostname ${HOST}
+    ssh -i ~/.ssh/k8s -n root@${IP} systemctl restart systemd-hostnamed
 done < machines.txt
 ```
 
@@ -116,7 +115,7 @@ Verify the hostname is set on each machine:
 
 ```bash
 while read IP FQDN HOST SUBNET; do
-  ssh -n root@${IP} hostname --fqdn
+  ssh -i ~/.ssh/k8s -n root@${IP} hostname --fqdn
 done < machines.txt
 ```
 
@@ -178,7 +177,7 @@ cat /etc/hosts
 
 ```text
 127.0.0.1       localhost
-127.0.1.1       jumpbox
+127.0.1.1       hub01
 
 # The following lines are desirable for IPv6 capable hosts
 ::1     localhost ip6-localhost ip6-loopback
@@ -194,8 +193,8 @@ X.X.X.X k8s-worker02.lab.net k8s-worker02 10.200.1.0/24
 At this point you should be able to SSH to each machine listed in the `machines.txt` file using a hostname.
 
 ```bash
-for host in server node-0 node-1
-   do ssh root@${host} hostname
+for host in k8s-server01 k8s-worker01 k8s-worker02; do
+  ssh -i ~/.ssh/k8s root@${host} hostname
 done
 ```
 
@@ -213,8 +212,8 @@ Copy the `hosts` file to each machine and append the contents to `/etc/hosts`:
 
 ```bash
 while read IP FQDN HOST SUBNET; do
-  scp hosts root@${HOST}:~/
-  ssh -n \
+  scp -i ~/.ssh/k8s hosts root@${HOST}:~/
+  ssh -i ~/.ssh/k8s -n \
     root@${HOST} "cat hosts >> /etc/hosts"
 done < machines.txt
 ```

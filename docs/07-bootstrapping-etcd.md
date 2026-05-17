@@ -17,7 +17,7 @@ scp -i ~/.ssh/k8s \
 The commands in this lab must be run on the `server` machine. Login to the `server` machine using the `ssh` command. Example:
 
 ```bash
-ssh root@k8s-server01
+ssh -i ~/.ssh/k8s root@k8s-server01
 ```
 
 ## Bootstrapping an etcd Cluster

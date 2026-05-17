@@ -206,12 +206,12 @@ Copy the `kubelet` and `kube-proxy` kubeconfig files to the `k8s-worker01` and `
 
 ```bash
 for host in k8s-worker01 k8s-worker02; do
-  ssh root@${host} "mkdir -p /var/lib/{kube-proxy,kubelet}"
+  ssh -i ~/.ssh/k8s root@${host} "mkdir -p /var/lib/{kube-proxy,kubelet}"
 
-  scp kube-proxy.kubeconfig \
+  scp -i ~/.ssh/k8s kube-proxy.kubeconfig \
     root@${host}:/var/lib/kube-proxy/kubeconfig \
 
-  scp ${host}.kubeconfig \
+  scp -i ~/.ssh/k8s ${host}.kubeconfig \
     root@${host}:/var/lib/kubelet/kubeconfig
 done
 ```

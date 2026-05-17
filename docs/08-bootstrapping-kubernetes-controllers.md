@@ -7,7 +7,7 @@ In this lab you will bootstrap the Kubernetes control plane. The following compo
 Connect to the `jumpbox` and copy Kubernetes binaries and systemd unit files to the `server` machine:
 
 ```bash
-scp \
+scp -i ~/.ssh/k8s \
   downloads/controller/kube-apiserver \
   downloads/controller/kube-controller-manager \
   downloads/controller/kube-scheduler \
@@ -17,13 +17,13 @@ scp \
   units/kube-scheduler.service \
   configs/kube-scheduler.yaml \
   configs/kube-apiserver-to-kubelet.yaml \
-  root@server:~/
+  root@k8s-server01:~/
 ```
 
 The commands in this lab must be run on the `server` machine. Login to the `server` machine using the `ssh` command. Example:
 
 ```bash
-ssh root@server
+ssh -i ~/.ssh/k8s root@k8s-server01
 ```
 
 ## Provision the Kubernetes Control Plane
@@ -106,6 +106,8 @@ mv kube-scheduler.service /etc/systemd/system/
 
 ```bash
 {
+  sudo restorecon -RF /etc/systemd/system && sudo restorecon -RF /usr/local/bin
+
   systemctl daemon-reload
 
   systemctl enable kube-apiserver \
@@ -158,7 +160,7 @@ In this section you will configure RBAC permissions to allow the Kubernetes API 
 The commands in this section will affect the entire cluster and only need to be run on the `server` machine.
 
 ```bash
-ssh root@server
+ssh -i ~/.ssh/k8s root@k8s-server01
 ```
 
 Create the `system:kube-apiserver-to-kubelet` [ClusterRole](https://kubernetes.io/docs/reference/access-authn-authz/rbac/#role-and-clusterrole) with permissions to access the Kubelet API and perform most common tasks associated with managing pods:
@@ -176,21 +178,23 @@ Make a HTTP request for the Kubernetes version info:
 
 ```bash
 curl --cacert ca.crt \
-  https://server.kubernetes.local:6443/version
+  https://k8s-server01.lab.net:6443/version
 ```
 
 ```text
 {
   "major": "1",
-  "minor": "32",
-  "gitVersion": "v1.32.3",
+  "minor": "36",
+  "gitVersion": "v1.36.1",
   "gitCommit": "32cc146f75aad04beaaa245a7157eb35063a9f99",
   "gitTreeState": "clean",
   "buildDate": "2025-03-11T19:52:21Z",
   "goVersion": "go1.23.6",
   "compiler": "gc",
-  "platform": "linux/arm64"
+  "platform": "linux/amd64"
 }
 ```
+
+If you encounter a 'no route to host' error message, ensure that port is open on firewalld.
 
 Next: [Bootstrapping the Kubernetes Worker Nodes](09-bootstrapping-kubernetes-workers.md)

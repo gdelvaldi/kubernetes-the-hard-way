@@ -42,7 +42,7 @@ Generate the certificates and private keys:
 
 ```bash
 certs=(
-  "admin" "node-0" "node-1"
+  "admin" "k8s-worker01" "k8s-worker02"
   "kube-proxy" "kube-scheduler"
   "kube-controller-manager"
   "kube-api-server"
@@ -81,14 +81,14 @@ Copy the appropriate certificates and private keys to the `k8s-worker01` and `k8
 
 ```bash
 for host in k8s-worker01 k8s-worker02; do
-  ssh root@${host} mkdir /var/lib/kubelet/
+  ssh -i ~/.ssh/k8s root@${host} mkdir /var/lib/kubelet/
 
-  scp ca.crt root@${host}:/var/lib/kubelet/
+  scp -i ~/.ssh/k8s ca.crt root@${host}:/var/lib/kubelet/
 
-  scp ${host}.crt \
+  scp -i ~/.ssh/k8s ${host}.crt \
     root@${host}:/var/lib/kubelet/kubelet.crt
 
-  scp ${host}.key \
+  scp -i ~/.ssh/k8s ${host}.key \
     root@${host}:/var/lib/kubelet/kubelet.key
 done
 ```
@@ -96,7 +96,7 @@ done
 Copy the appropriate certificates and private keys to the `server` machine:
 
 ```bash
-scp \
+scp -i ~/.ssh/k8s \
   ca.key ca.crt \
   kube-api-server.key kube-api-server.crt \
   service-accounts.key service-accounts.crt \
