@@ -8,3 +8,4 @@ hosts
 *.key
 *.pem
 *.kubeconfig
+/downloads
