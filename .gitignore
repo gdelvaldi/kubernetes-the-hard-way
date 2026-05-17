@@ -1,5 +1,5 @@
           
-.encryption-config.yaml
+encryption-config.yaml
 *.swp
 machines.txt
 hosts
