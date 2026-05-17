@@ -8,4 +8,6 @@ hosts
 *.key
 *.pem
 *.kubeconfig
+ca.srl
 /downloads
+10-bridge.conf
